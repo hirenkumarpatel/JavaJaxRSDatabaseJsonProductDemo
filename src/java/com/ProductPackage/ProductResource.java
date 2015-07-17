@@ -19,8 +19,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.POST;
 import javax.ws.rs.QueryParam;
+import static javax.ws.rs.client.Entity.json;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -36,6 +40,8 @@ import org.json.simple.parser.ParseException;
 @Path("product")
 public class ProductResource {
 
+     JsonObjectBuilder json = Json.createObjectBuilder();
+    JsonArrayBuilder productJsonArray = Json.createArrayBuilder();
     ArrayList<Product> productList = new ArrayList<>();
     @Context
     private UriInfo context;
@@ -54,7 +60,7 @@ public class ProductResource {
     @GET
     @Path("/products")
     @Produces("application/json")
-    public ArrayList<Product> getProducts() throws SQLException {
+    public String getProducts() throws SQLException {
         //TODO return proper representation object
         // throw new UnsupportedOperationException();
 
@@ -70,16 +76,23 @@ public class ProductResource {
         while (rs.next()) {
             Product product = new Product(rs.getInt("productid"), rs.getString("name"), rs.getString("description"), rs.getInt("quantity"));
             productList.add(product);
+            json = Json.createObjectBuilder()
+                        .add("productid", rs.getInt("productid"))
+                        .add("name", rs.getString("name"))
+                        .add("description", rs.getString("description"))
+                        .add("quantity", rs.getInt("quantity"));
+               productJsonArray.add(json);
 
         }
         conn.close();
-        return productList;
+        String resultString = productJsonArray.build().toString();
+        return resultString;
     }
 
     @GET
     @Path("/products/{id}")
     @Produces("application/json")
-    public ArrayList<Product> getProductById(@PathParam("id") int productId) throws SQLException {
+    public String getProductById(@PathParam("id") int productId) throws SQLException {
         //TODO return proper representation object
         // throw new UnsupportedOperationException();
 
@@ -95,10 +108,22 @@ public class ProductResource {
         while (rs.next()) {
             Product product = new Product(rs.getInt("productid"), rs.getString("name"), rs.getString("description"), rs.getInt("quantity"));
             productList.add(product);
-
+            
+             json = Json.createObjectBuilder()
+                        .add("productID", rs.getInt("productID"))
+                        .add("name", rs.getString("name"))
+                        .add("description", rs.getString("description"))
+                        .add("quantity", rs.getInt("quantity"));
+               productJsonArray.add(json);
         }
+
+       String resultString = productJsonArray.build().toString();
         conn.close();
-        return productList;
+        return resultString;
+
+        
+   
+        
     }
 
     @POST
